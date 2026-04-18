@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+//toda model precisa ter uma primary key!!
+model Aluno {
+  id String @id @default(uuid())
+  nome String @db.VarChar(120)
+  email String @unique @db.Char(60)
+  senha String
+  dtNascimento DateTime? @db.Date @map("dt_nascimento")
+  formado Boolean @default(false)
+  rg Int?
+
+  dtCriacao DateTime @default(now()) @map("dt_criacao")
+  dtAtualizacao DateTime @map("dt_atualizacao") @updatedAt
+
+  // isso e uma regra do prisma que precisa referenciar a model, porem nesse caso de 1 pra 1 o relacionamento ficou do lado de endereco
+  endereco Endereco?
+  avaliacoes Avaliacao[]
+  
+  @@map("aluno")
+}
+
+
+//Aluno possui 1 endereco, 1 endereco esta associado a 1 aluno
+
+model Endereco {
+  id String @id
+  rua String @db.VarChar(30)
+  bairro String @db.VarChar(30)
+  numero Int
+  cidade String @db.VarChar(50)
+
+  //idAluno se refere a chave estrangeira
+  idAluno String @unique @map("id_aluno")
+
+  //esta relacionando aluno com o endereco  
+  aluno Aluno @relation(fields: [idAluno], references: [id])
+}
+
+
+
+model Avaliacao {
+  id String @id @default(uuid())
+  disciplina String @db.VarChar(30)
+  nota Int @db.SmallInt
+  dtAvaliacao DateTime @default(now()) @map("dt_avaliacao")
+
+  idAluno String @map("id_aluno")
+  aluno Aluno @relation(fields: [idAluno], references: [id])
+}
+
+
+model Curso {
+  id String @id @default(uuid())
+  titulo String
+  ementa String
+  cargaHoraria Decimal @map("carga_horaria")
+  maxAlunos Int @default(30) @db.SmallInt @map("max_alunos")
+  status String
+
+  dtCriacao DateTime @default(now()) @map("dt_criacao")
+  dtAtualizacao DateTime @map("dt_atualizacao") @updatedAt
+
+  @@map("curso")
+}
+
+model Material {
+  id Int @id @default(autoincrement())
+  titulo String
+  descricao String
+  link String
+  disponivel Boolean
+
+  dtCriacao DateTime @default(now()) @map("dt_criacao")
+  dtAtualizacao DateTime @map("dt_atualizacao") @updatedAt
+
+  @@map("material")
+}
