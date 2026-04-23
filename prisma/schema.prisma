@@ -24,7 +24,7 @@ model Aluno {
   // isso e uma regra do prisma que precisa referenciar a model, porem nesse caso de 1 pra 1 o relacionamento ficou do lado de endereco
   endereco Endereco?
   avaliacoes Avaliacao[]
-  
+  matriculas Matricula[]
   @@map("aluno")
 }
 
@@ -54,10 +54,11 @@ model Avaliacao {
   dtAvaliacao DateTime @default(now()) @map("dt_avaliacao")
 
   idAluno String @map("id_aluno")
-  aluno Aluno @relation(fields: [idAluno], references: [id])
+  aluno Aluno @relation(fields: [idAluno], references: [id], onDelete: Cascade)
 }
 
-
+//um aluno pode se matricular em N cursos
+// um curso pode ter matriculas de N alunos
 model Curso {
   id String @id @default(uuid())
   titulo String
@@ -66,10 +67,28 @@ model Curso {
   maxAlunos Int @default(30) @db.SmallInt @map("max_alunos")
   status String
 
+
+
   dtCriacao DateTime @default(now()) @map("dt_criacao")
   dtAtualizacao DateTime @map("dt_atualizacao") @updatedAt
+  matriculas Matricula[]
+
+
 
   @@map("curso")
+}
+
+
+model Matricula {
+  idAluno String @map("id_aluno")
+  idCurso String @map("id_curso")
+  dtMatricula DateTime @default(now()) @map("dt_matricula")
+  aluno Aluno @relation(fields: [idAluno], references: [id], onDelete: Cascade)
+  curso Curso @relation(fields: [idCurso], references: [id], onDelete: Cascade)
+
+  @@id([idAluno, idCurso])
+  @@map("matricula")
+
 }
 
 model Material {
